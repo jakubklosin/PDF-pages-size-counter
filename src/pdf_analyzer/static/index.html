@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PDF Analyzer</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">PDF Analyzer</p>
+          <h1>Count page sizes, print area, and color usage.</h1>
+          <p class="description">
+            Select one or more PDF files to calculate A-series page counts, custom
+            dimensions, square meters of paper, and black-and-white versus color pages.
+          </p>
+        </div>
+        <div class="upload-actions">
+          <input id="pdf-files" type="file" accept="application/pdf,.pdf" multiple />
+          <button id="select-files" type="button">Analyze PDF files</button>
+        </div>
+      </section>
+
+      <section id="status" class="status hidden" role="status"></section>
+
+      <section id="summary" class="summary hidden" aria-label="Overall summary"></section>
+
+      <section class="panel hidden" id="size-panel">
+        <h2>Pages by size</h2>
+        <div id="size-table"></div>
+      </section>
+
+      <section class="panel hidden" id="files-panel">
+        <h2>Files</h2>
+        <div id="files"></div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
