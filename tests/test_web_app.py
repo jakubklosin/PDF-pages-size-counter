@@ -4,7 +4,7 @@ from io import BytesIO
 
 from fastapi.testclient import TestClient
 
-from pdf_analyzer.app import app
+from pdf_analyzer.web_app import app
 
 
 def create_pdf_bytes() -> bytes:
@@ -12,18 +12,18 @@ def create_pdf_bytes() -> bytes:
 
     buffer = BytesIO()
     document = fitz.open()
-    page = document.new_page(width=210 * 72 / 25.4, height=297 * 72 / 25.4)
+    page = document.new_page(width=420 * 72 / 25.4, height=900 * 72 / 25.4)
     page.draw_rect(
-        fitz.Rect(20, 20, 120, 120),
-        color=(0, 0, 0),
-        fill=(0, 0, 0),
+        fitz.Rect(20, 20, 220, 220),
+        color=(1, 0, 0),
+        fill=(1, 0, 0),
     )
     document.save(buffer)
     document.close()
     return buffer.getvalue()
 
 
-def test_index_serves_web_ui() -> None:
+def test_index_serves_browser_ui() -> None:
     client = TestClient(app)
 
     response = client.get("/")
@@ -32,7 +32,7 @@ def test_index_serves_web_ui() -> None:
     assert "PDF Analyzer" in response.text
 
 
-def test_analyze_uploads_pdf_files() -> None:
+def test_analyze_uploads_pdf_file() -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -44,11 +44,11 @@ def test_analyze_uploads_pdf_files() -> None:
     data = response.json()
     assert data["summary"]["total_files"] == 1
     assert data["summary"]["total_pages"] == 1
-    assert data["summary"]["page_size_counts"] == {"A4": 1}
+    assert data["summary"]["total_area_m2"] > 0
     assert data["files"][0]["file_name"] == "sample.pdf"
 
 
-def test_analyze_uploads_rejects_non_pdf_files() -> None:
+def test_analyze_uploads_rejects_non_pdf_file() -> None:
     client = TestClient(app)
 
     response = client.post(

@@ -4,22 +4,33 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PDF Analyzer</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="app">
+      <div class="language-switch" aria-label="Language">
+        <button class="language-option" type="button" data-language="en">English</button>
+        <button class="language-option" type="button" data-language="pl">Polski</button>
+      </div>
+
       <section class="hero">
         <div>
-          <p class="eyebrow">PDF Analyzer</p>
-          <h1>Count page sizes, print area, and color usage.</h1>
-          <p class="description">
+          <p class="eyebrow" data-i18n="eyebrow">PDF Analyzer</p>
+          <h1 data-i18n="title">Count page sizes, print area, and color usage.</h1>
+          <p class="description" data-i18n="description">
             Select one or more PDF files to calculate A-series page counts, custom
             dimensions, square meters of paper, and black-and-white versus color pages.
           </p>
         </div>
         <div class="upload-actions">
-          <input id="pdf-files" type="file" accept="application/pdf,.pdf" multiple />
-          <button id="select-files" type="button">Analyze PDF files</button>
+          <input
+            id="pdf-files"
+            class="web-upload"
+            type="file"
+            accept="application/pdf,.pdf"
+            multiple
+          />
+          <button id="select-files" type="button" data-i18n="selectFiles">Select PDF files</button>
         </div>
       </section>
 
@@ -28,16 +39,16 @@
       <section id="summary" class="summary hidden" aria-label="Overall summary"></section>
 
       <section class="panel hidden" id="size-panel">
-        <h2>Pages by size</h2>
+        <h2 data-i18n="pagesBySize">Pages by size</h2>
         <div id="size-table"></div>
       </section>
 
       <section class="panel hidden" id="files-panel">
-        <h2>Files</h2>
+        <h2 data-i18n="filesTitle">Files</h2>
         <div id="files"></div>
       </section>
     </main>
 
-    <script src="/static/app.js"></script>
+    <script src="./app.js"></script>
   </body>
 </html>

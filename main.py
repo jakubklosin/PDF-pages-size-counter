@@ -1,8 +1,8 @@
-from pdf_analyzer.app import run_server
+from pdf_analyzer.app import run_app
 
 
 def main() -> None:
-    run_server()
+    run_app()
 
 
 if __name__ == "__main__":

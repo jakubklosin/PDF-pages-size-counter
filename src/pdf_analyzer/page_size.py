@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from math import ceil
 from math import hypot
 
 from pdf_analyzer.models import PageSizeClassification
@@ -38,6 +39,21 @@ def area_m2(width_mm: float, height_mm: float) -> float:
     return (width_mm / MM_PER_METER) * (height_mm / MM_PER_METER)
 
 
+def ceil_to_one_decimal(value: float) -> float:
+    return ceil(value * 10) / 10
+
+
+def billable_width_for_page(
+    width_mm: float,
+    *,
+    tolerance_mm: float = DEFAULT_TOLERANCE_MM,
+) -> tuple[float, str]:
+    for name, (target_width, _target_height) in A_SERIES_MM.items():
+        if width_mm <= target_width + tolerance_mm:
+            return target_width, name
+    return width_mm, "A0+"
+
+
 def classify_page_size(
     width_points: float,
     height_points: float,
@@ -49,45 +65,91 @@ def classify_page_size(
 
     for name, target in A_SERIES_MM.items():
         if _matches_dimensions((width_mm, height_mm), target, tolerance_mm):
+            billable = calculate_billable_area(
+                name=name,
+                category="standard",
+                width_mm=width_mm,
+                height_mm=height_mm,
+                tolerance_mm=tolerance_mm,
+            )
             return PageSizeClassification(
                 name=name,
                 category="standard",
                 width_mm=width_mm,
                 height_mm=height_mm,
                 area_m2=round(page_area_m2, 4),
+                billable_area_m2=billable[0],
+                billable_size_name=billable[1],
+                billable_width_mm=billable[2],
+                billable_height_mm=billable[3],
                 closest_standard_size=name,
             )
 
     if _is_a0_plus(width_mm, height_mm, tolerance_mm):
+        billable = calculate_billable_area(
+            name="A0+",
+            category="a0_plus",
+            width_mm=width_mm,
+            height_mm=height_mm,
+            tolerance_mm=tolerance_mm,
+        )
         return PageSizeClassification(
             name="A0+",
             category="a0_plus",
             width_mm=width_mm,
             height_mm=height_mm,
             area_m2=round(page_area_m2, 4),
+            billable_area_m2=billable[0],
+            billable_size_name=billable[1],
+            billable_width_mm=billable[2],
+            billable_height_mm=billable[3],
             closest_standard_size="A0",
             note=_format_custom_dimension_note(width_mm, height_mm),
         )
 
     custom_length_match = _find_custom_length_match(width_mm, height_mm, tolerance_mm)
     if custom_length_match is not None:
+        name = f"{custom_length_match} custom length"
+        billable = calculate_billable_area(
+            name=name,
+            category="custom_length",
+            width_mm=width_mm,
+            height_mm=height_mm,
+            tolerance_mm=tolerance_mm,
+        )
         return PageSizeClassification(
-            name=f"{custom_length_match} custom length",
+            name=name,
             category="custom_length",
             width_mm=width_mm,
             height_mm=height_mm,
             area_m2=round(page_area_m2, 4),
+            billable_area_m2=billable[0],
+            billable_size_name=billable[1],
+            billable_width_mm=billable[2],
+            billable_height_mm=billable[3],
             closest_standard_size=custom_length_match,
             note=_format_custom_dimension_note(width_mm, height_mm),
         )
 
     closest = closest_a_series_size(width_mm, height_mm)
+    name = f"Custom ({closest})"
+    billable = calculate_billable_area(
+        name=name,
+        category="custom",
+        width_mm=width_mm,
+        height_mm=height_mm,
+        tolerance_mm=tolerance_mm,
+    )
     return PageSizeClassification(
-        name=f"Custom ({closest})",
+        name=name,
         category="custom",
         width_mm=width_mm,
         height_mm=height_mm,
         area_m2=round(page_area_m2, 4),
+        billable_area_m2=billable[0],
+        billable_size_name=billable[1],
+        billable_width_mm=billable[2],
+        billable_height_mm=billable[3],
         closest_standard_size=closest,
         note=_format_custom_dimension_note(width_mm, height_mm),
     )
@@ -102,6 +164,29 @@ def closest_a_series_size(width_mm: float, height_mm: float) -> str:
             normalized[1] - A_SERIES_MM[name][1],
         ),
     )
+
+
+def calculate_billable_area(
+    *,
+    name: str,
+    category: str,
+    width_mm: float,
+    height_mm: float,
+    tolerance_mm: float = DEFAULT_TOLERANCE_MM,
+) -> tuple[float, str, float, float]:
+    if category == "standard" and name in {"A4", "A3"}:
+        return 0.0, name, width_mm, height_mm
+
+    billable_width_mm, billable_size_name = billable_width_for_page(
+        width_mm,
+        tolerance_mm=tolerance_mm,
+    )
+    billable_area_m2 = ceil_to_one_decimal(area_m2(billable_width_mm, height_mm))
+    if category == "custom_length":
+        billable_size_name = f"{billable_size_name} custom length"
+    elif category == "custom":
+        billable_size_name = f"Custom ({billable_size_name})"
+    return billable_area_m2, billable_size_name, billable_width_mm, height_mm
 
 
 def _matches_dimensions(

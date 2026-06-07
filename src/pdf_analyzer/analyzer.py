@@ -55,6 +55,10 @@ def analyze_file(path: str) -> FileAnalysis:
                         width_mm=size.width_mm,
                         height_mm=size.height_mm,
                         area_m2=size.area_m2,
+                        billable_area_m2=size.billable_area_m2,
+                        billable_size_name=size.billable_size_name,
+                        billable_width_mm=size.billable_width_mm,
+                        billable_height_mm=size.billable_height_mm,
                         size_name=size.name,
                         size_category=size.category,
                         closest_standard_size=size.closest_standard_size,
@@ -68,10 +72,15 @@ def analyze_file(path: str) -> FileAnalysis:
         result.pages.clear()
         result.total_pages = 0
         result.total_area_m2 = 0.0
-        result.total_area_excluding_a4_m2 = 0.0
+        result.measured_area_m2 = 0.0
         result.page_size_counts.clear()
         result.page_size_area_m2.clear()
+        result.measured_page_size_area_m2.clear()
         result.color_counts = {"black_white": 0, "color": 0}
         result.color_area_m2 = {"black_white": 0.0, "color": 0.0}
+        result.regular_page_color_counts = {
+            "A4": {"black_white": 0, "color": 0},
+            "A3": {"black_white": 0, "color": 0},
+        }
 
     return result
